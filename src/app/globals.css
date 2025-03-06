@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0a3069;
+  --primary-dark: #052248;
+  --secondary: #10b981;
+  --bet-win: #10b981;
+  --bet-draw: #f59e0b;
+  --bet-loss: #ef4444;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer base {
+  h1 {
+    @apply text-2xl font-bold md:text-3xl;
+  }
+  h2 {
+    @apply text-xl font-bold md:text-2xl;
+  }
+  h3 {
+    @apply text-lg font-bold md:text-xl;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-dark px-4 py-2 rounded-md font-medium transition-colors;
+  }
+}
