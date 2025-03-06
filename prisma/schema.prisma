@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model League {
+  id      String   @id @default(cuid())
+  apiId   Int      @unique
+  name    String
+  country String
+  logo    String?
+  flag    String?
+  matches Match[]
+}
+
+model Team {
+  id             String  @id @default(cuid())
+  apiId          Int     @unique
+  name           String
+  logo           String?
+  homeMatches    Match[] @relation("HomeTeam")
+  awayMatches    Match[] @relation("AwayTeam")
+}
+
+model Match {
+  id            String     @id @default(cuid())
+  apiId         Int        @unique
+  leagueId      String
+  league        League     @relation(fields: [leagueId], references: [id])
+  homeTeamId    String
+  homeTeam      Team       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId    String
+  awayTeam      Team       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  matchDate     DateTime
+  status        MatchStatus @default(NOT_STARTED)
+  odds          Odds[]
+  prediction    Prediction?
+}
+
+model Odds {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  provider  String
+  homeWin   Float
+  draw      Float
+  awayWin   Float
+  createdAt DateTime @default(now())
+}
+
+model Prediction {
+  id         String          @id @default(cuid())
+  matchId    String          @unique
+  match      Match           @relation(fields: [matchId], references: [id])
+  homeChance Float
+  drawChance Float
+  awayChance Float
+  prediction PredictionResult
+  confidence Float
+  reasoning  String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+enum MatchStatus {
+  NOT_STARTED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum PredictionResult {
+  HOME_WIN
+  DRAW
+  AWAY_WIN
+}
